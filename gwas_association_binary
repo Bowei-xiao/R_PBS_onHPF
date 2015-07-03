@@ -1,5 +1,7 @@
 #!/bin/bash -x
 # Syntax: qsub -t 1-23 gwas_association_binary.pbs
+# This can also serves as a template as how to run PBS script, the main format are listed
+
 
 #PBS -l mem=120g
 #PBS -l vmem=120g
@@ -20,3 +22,14 @@ echo "Working dir is ${PBS_O_WORKDIR}"
 
 date
 # Here goes the Bash Code
+
+# ======Challenges we have=====================
+# The file manipulated was compressed separately in several files but don't know how many files for each job
+# Due to the arragement of HPF, the data was saved differently to the home directory. 
+# Another issue this particular data have is that data is so big that uncompressed file is bigger than home directory
+# Decompress and load directly from data folder is slow and takes long time
+# So impossible to uncompress under home directory nor under data directory
+
+
+
+
