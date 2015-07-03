@@ -23,13 +23,67 @@ echo "Working dir is ${PBS_O_WORKDIR}"
 date
 # Here goes the Bash Code
 
-# ======Challenges we have=====================
+# ======Los Problemas=================
 # The file manipulated was compressed separately in several files but don't know how many files for each job
 # Due to the arragement of HPF, the data was saved differently to the home directory. 
 # Another issue this particular data have is that data is so big that uncompressed file is bigger than home directory
 # Decompress and load directly from data folder is slow and takes long time
 # So impossible to uncompress under home directory nor under data directory
 
+# R code cannot deal with empty blocks
+# R code cannot deal with large file
+
+# ======Las Soluciones===========
+# Created soft link to data, could be directly access from home directory
+# but decompress and calculation in a temporary folder 
+# copy necessary files to that temporary folder
+# identify empty block if the size is less than 1M before decompress
+# trials and errors found 50 000 be the treshold for R script to run relatively efficient
+# Also biggest file has ~90 000 lines
+# So break down any bigger files to two parts and calculate them relatively (assume each SNP in row is independent)
+# WARNING: from my own trial, 60 000 lines would used up all the visual memory assigned (weird and dont know why)
 
 
+i=${PBS_ARRAYID}  # i in general representing the chromosome number; here is used as the job subscript
+TMPDIR=/localhd/${PBS_JOBID} #The temporary directory used for saving data
+# Copying all necessity files
+cp runAnalysis.sh $TMPDIR  #The actual script to run
+cp 0601Meta* $TMPDIR #
+cp fam* $TMPDIR
 
+cd $TMPDIR
+# count numbers of blocks in chromosome i
+block_n=$(find /home/bowei/gwas1_2_MI_Meta_analysis/GWAS2/chr${i} -maxdepth 1 -type f | wc -l)
+for (( j=1; j<=$block_n; j++ )) #in general j representing the block number
+do
+# Skip the empty blocks
+size=$(du -sb /home/bowei/gwas1_2_MI_Meta_analysis/GWAS2/chr${i}/chr${i}.block${j}.dosage.gz | awk '{ print $1 }')
+if [ $size -gt 1048576 ]; # skip empty files
+ then
+gunzip -c /home/bowei/gwas1_2_MI_Meta_analysis/GWAS1/chr${i}/chr${i}.block${j}.dosage.gz > $TMPDIR/chr${i}.block${j}.dosage_g1
+gunzip -c /home/bowei/gwas1_2_MI_Meta_analysis/GWAS2/chr${i}/chr${i}.block${j}.dosage.gz > $TMPDIR/chr${i}.block${j}.dosage_g2
+line_num=$(wc -l $TMPDIR/chr${i}.block${j}.dosage_g1 | awk '{ print $1 }')
+# break down the files to 2 if the file exceeds 50000 SNPs
+# break dowan at around middle point
+if [ $line_num -gt 50000 ];
+then
+  cd $TMPDIR
+  head -n $((line_num / 2)) $TMPDIR/chr${i}.block${j}.dosage_g1 > temp1_chr${i}.block${j}.dosage_g1
+  tail -n $((line_num-(line_num / 2))) $TMPDIR/chr${i}.block${j}.dosage_g1 > temp2_chr${i}.block${j}.dosage_g1
+  head -n $((line_num / 2)) $TMPDIR/chr${i}.block${j}.dosage_g2 > temp1_chr${i}.block${j}.dosage_g2
+  tail -n $((line_num-(line_num / 2))) $TMPDIR/chr${i}.block${j}.dosage_g2 > temp2_chr${i}.block${j}.dosage_g2
+  
+  bash runAnalysis.sh $TMPDIR/temp1_chr${i}.block${j}.dosage_g1 $TMPDIR/temp1_chr${i}.block${j}.dosage_g2 ${i}
+  bash runAnalysis.sh $TMPDIR/temp2_chr${i}.block${j}.dosage_g1 $TMPDIR/temp2_chr${i}.block${j}.dosage_g2 ${i}
+  
+  cat temp1_chr${i}.block${j}_fr_out.txt temp2_chr${i}.block${j}_fr_out.txt > chr${i}.block${j}_fr_out.txt
+  cat temp1_chr${i}.block${j}_jhu_out.txt temp2_chr${i}.block${j}_jhu_out.txt > chr${i}.block${j}_jhu_out.txt
+  cat temp1_chr${i}.block${j}_tor_out.txt temp2_chr${i}.block${j}_tor_out.txt > chr${i}.block${j}_tor_out.txt
+  cat temp1_chr${i}.block${j}_unc_out.txt temp2_chr${i}.block${j}_unc_out.txt > chr${i}.block${j}_unc_out.txt
+else
+bash runAnalysis.sh $TMPDIR/chr${i}.block${j}.dosage_g1 $TMPDIR/chr${i}.block${j}.dosage_g2 ${i}
+fi
+fi
+done
+rm ./results/temp* # delete all temporary files
+cp -r ./results ***where data should be saved***
