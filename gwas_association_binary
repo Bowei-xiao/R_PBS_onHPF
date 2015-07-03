@@ -1,0 +1,22 @@
+#!/bin/bash -x
+# Syntax: qsub -t 1-23 gwas_association_binary.pbs
+
+#PBS -l mem=120g
+#PBS -l vmem=120g
+#PBS -l walltime=240:00:00
+#PBS -l nodes=1:ppn=30
+#PBS -l gres=localhd:10
+#PBS -o /home/bowei/job_output/
+#PBS -e /home/bowei/job_output/
+#PBS -d ***working directory here***
+#PBS -N gwas1_2_MI_Meta
+
+export OUTDIR=$PBS_O_WORKDIR/job_output
+export PATH=$PATH:$PBS_O_WORKDIR
+hostname
+
+cd $PBS_O_WORKDIR
+echo "Working dir is ${PBS_O_WORKDIR}"
+
+date
+# Here goes the Bash Code
