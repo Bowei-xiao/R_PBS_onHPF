@@ -4,7 +4,6 @@
 
 f1=$1   # data from GW1
 f2=$2   # data from GW2
-i=$3    # Chromosome number
 # Tor siblings were added to JHU cohort so that 
 # 1. we could run logistic using Toronto samples, reducing calculation time
 # 2. More importantly, Toronto sample may not converge since there are so few clusters
