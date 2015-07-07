@@ -1,6 +1,9 @@
-#....
-#......
-#........
+# R code to run logistic regression with MI and each SNP independently
+# For each SNP using both GWAS1 and 2 from the same cohort as data for the analysis
+# covaraites now have only platform(indicator) and PCs to correct for ethnicity
+# number of PCs to include was determined by Tracy-Widom Test (6 in my case)
+# GEE analysis for JHU was done very similarly, might combine them to one file in the future
+
 # ======== La funcion principal ===========
 logResult = function(dosage,pheno,m, snpname){
   # remove MAF that are < 0.02 
@@ -31,7 +34,7 @@ logResult = function(dosage,pheno,m, snpname){
 library('doMC')
 library('foreach')
 library('data.table')
-registerDoMC(30) # This better matched with PBS file setup  
+registerDoMC(30) # This better matched with PBS file setup:  PBS -l nodes=1:ppn=30
 
 args=(commandArgs(TRUE))
 genoFile1 = as.character(args[1]) # file name for gw1, should be like chr1.block1.dosage
