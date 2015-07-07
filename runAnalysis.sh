@@ -12,8 +12,8 @@ i=$3    # Chromosome number
 # Actual code was in R
 
 
-Rscript 0601Meta_log.R ${f1} ${f2} 'fam_fr.fam' ${i}
-Rscript 0601Meta_log.R ${f1} ${f2} 'fam_tor.fam' ${i}
-Rscript 0601Meta_log.R ${f1} ${f2} 'fam_unc.fam' ${i}
-Rscript 0601Meta_gee.R ${f1} ${f2} 'fam_jhu.fam' ${i}
+Rscript Meta_log.R ${f1} ${f2} 'fam_fr.fam' ${i}
+Rscript Meta_log.R ${f1} ${f2} 'fam_tor.fam' ${i}
+Rscript Meta_log.R ${f1} ${f2} 'fam_unc.fam' ${i}
+Rscript Meta_gee.R ${f1} ${f2} 'fam_jhu.fam' ${i}
 echo 'Analysis is Done' 
