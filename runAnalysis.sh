@@ -1,5 +1,6 @@
 # !/bin/bash
 # Syntax: runAnalysis.sh data1 data2 phenotype ChrNumber
+# This is a dependent file for gwas_association_binary.pbs
 
 f1=$1   # data from GW1
 f2=$2   # data from GW2
