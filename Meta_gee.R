@@ -19,18 +19,19 @@ geeResult = function(dosage,pheno,m, snpname){
     
     # Run GEE
     # Cluster Formatting: set FID to factor, then to numeric
+    # Ignore the SNPs that crashed GEE algorithm. Returning NAs
     clusters <- as.numeric(as.factor(ordered_asso$FID))
-    res = geeglm(as.formula(paste0('Modi_pheno~dosage+as.factor(PLATFORM)+'
-                                   ,c(paste0('PC',1:6,collapse = '+'))))
+    tryCatch({
+    res = geeglm(as.formula(paste0('Modi_pheno~dosage+topdosage+as.factor(PLATFORM)+',
+                                        ,c(paste0('PC',1:6,collapse = '+'))))
             , family='binomial', data = ordered_asso
             , corstr = 'exchangeable', id = clusters)
-    
-    if (is.na(res$coefficients['dosage'])){
-      return(c(SNP=snpname, estimates = NA, SE = NA, P_value = NA))
-    }else{
     return(c(SNP=snpname, Beta = as.character(coef(summary(res))["dosage",1]),
              SE = as.character(coef(summary(res))["dosage",2]),
-             P_value=as.character(coef(summary(res))["dosage",4])))
+             P_value=as.character(coef(summary(res))["dosage",4])))}
+    , error = function(e) {return(c(SNP=snpname, Beta=NA, SE=NA, P_value=NA))}
+    )
+   
   }}
 }
 # ============ El Fin =================================
