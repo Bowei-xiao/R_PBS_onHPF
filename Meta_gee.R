@@ -26,7 +26,7 @@ geeResult = function(dosage,pheno,m, snpname){
     # Whenever it commits an error, it will jump to the `error' chunk without stopping the execution
     # Other possible options are warning and finally: including anything not warnings or errors
       {
-        res = geeglm(as.formula(paste0('Modi_pheno~dosage+topdosage+as.factor(PLATFORM)+',
+        res = geeglm(as.formula(paste0('Modi_pheno~dosage+as.factor(PLATFORM)+',
                                         ,c(paste0('PC',1:6,collapse = '+'))))
               , family='binomial', data = ordered_asso
               , corstr = 'exchangeable', id = clusters)
