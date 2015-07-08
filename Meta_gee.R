@@ -2,6 +2,7 @@
 # purely for JHU site data
 # Based on the family structure (only Siblings), covariance structure were 
 # chosen to be exchangeable (Coumpound Symmetry)
+# This code is very much like the logistic ones, might be implemented together
 
 # ======== La funcion principal ===========
 geeResult = function(dosage,pheno,m, snpname){
@@ -21,15 +22,19 @@ geeResult = function(dosage,pheno,m, snpname){
     # Cluster Formatting: set FID to factor, then to numeric
     # Ignore the SNPs that crashed GEE algorithm. Returning NAs
     clusters <- as.numeric(as.factor(ordered_asso$FID))
-    tryCatch({
-    res = geeglm(as.formula(paste0('Modi_pheno~dosage+topdosage+as.factor(PLATFORM)+',
+    tryCatch( # This is like if statement. It will run the first chunk most of the time.
+    # Whenever it commits an error, it will jump to the `error' chunk without stopping the execution
+    # Other possible options are warning and finally: including anything not warnings or errors
+      {
+        res = geeglm(as.formula(paste0('Modi_pheno~dosage+topdosage+as.factor(PLATFORM)+',
                                         ,c(paste0('PC',1:6,collapse = '+'))))
-            , family='binomial', data = ordered_asso
-            , corstr = 'exchangeable', id = clusters)
-    return(c(SNP=snpname, Beta = as.character(coef(summary(res))["dosage",1]),
-             SE = as.character(coef(summary(res))["dosage",2]),
-             P_value=as.character(coef(summary(res))["dosage",4])))}
-    , error = function(e) {return(c(SNP=snpname, Beta=NA, SE=NA, P_value=NA))}
+              , family='binomial', data = ordered_asso
+              , corstr = 'exchangeable', id = clusters)
+        return(c(SNP=snpname, Beta = as.character(coef(summary(res))["dosage",1]),
+              SE = as.character(coef(summary(res))["dosage",2]),
+               P_value=as.character(coef(summary(res))["dosage",4])))
+      }
+      , error = function(e) {return(c(SNP=snpname, Beta=NA, SE=NA, P_value=NA))}
     )
    
   }}
@@ -54,7 +59,7 @@ m1 = dim(geno1)[2]-5 # N of indvs
 m2 = dim(geno2)[2]-5
 n = dim(geno1)[1] # N of SNPS in this block
 
-if (FALSE){ # This is the alternative code using bigmemory package
+if (FALSE){ # This is the alternative code using bigmemory package, althought not supported by my HPF
 library('bigmemory')
 geno1 = read.big.matrix(genoFile1, type='double', header=F,sep='\t')
 geno2 = read.big.matrix(genoFile2, type='double', header=F,sep='\t')
