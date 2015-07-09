@@ -1,0 +1,47 @@
+#!/bin/bash -x
+
+#PBS -l mem=120g
+#PBS -l vmem=120g
+#PBS -l walltime=240:00:00
+#PBS -l nodes=1:ppn=30
+#PBS -l gres=localhd:10
+#PBS -o /home/bowei/job_output/
+#PBS -e /home/bowei/job_output/
+#PBS -d ***working directory here***
+#PBS -N Metasoft
+
+export OUTDIR=$PBS_O_WORKDIR/job_output
+export PATH=$PATH:$PBS_O_WORKDIR
+hostname
+
+echo "Working dir is ${PBS_O_WORKDIR}"
+
+# Here goes the Bash Code
+i=${PBS_ARRAYID}
+
+# Transfering files to temporary folder
+TMPDIR=/localhd/${PBS_JOBID} #The temporary directory used for saving data
+# Copying all necessity files
+
+cp  -r ./cohortResults $TMPDIR  # This folder contains all results from the pervious step  
+cp runFileForMetasoft.R $TMPDIR 
+cp  -r ./Metasoft $TMPDIR # This folder contains necessary file to do Meta-GWAS
+
+cd $TMPDIR
+
+for j in chr${i}.block*_jhu_out.txt 
+# we just need the first part of the file name so any of the four files should be ok
+do
+# get the file name `chrxx.blockxx’ and save to $theFile
+IFS='_' read -a theFile <<< "$j"
+
+Rscript runFileForMetasoft.R ${theFile} 
+# Metasoft is embedded in Java, need Java JDK installed
+java -jar ./Metasoft/Metasoft.jar -input ${theFile}_forMetasoft.txt 
+     -pvalue_table ./Metasoft/HanEskinPvalueTable.txt -output ${theFile}_metaOut.txt 
+     -log ${theFile}_metaOut.log
+
+done
+
+cp ./MetaResults/*_metaOut.txt $PBS_O_WORKDIR # saved the results
+echo "Meta Analysis on Chromosome $i is done" 
