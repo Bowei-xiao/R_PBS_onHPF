@@ -16,17 +16,19 @@ geeResult = function(dosage,pheno,m, snpname){
     asso = na.omit(asso)
     # put clusters together -> order by families  
     ordered_asso = asso[order(asso$FID),]
-    ordered_asso$Modi_pheno = as.integer(ordered_asso$MI)
+    
+    ordered_asso$Modi_pheno = (as.integer(ordered_asso$MI))
     
     # Run GEE
     # Cluster Formatting: set FID to factor, then to numeric
     # Ignore the SNPs that crashed GEE algorithm. Returning NAs
+    # Additive model, so dosage should be just 0,1,2. Thus we round it to nearest integer
     clusters <- as.numeric(as.factor(ordered_asso$FID))
     tryCatch( # This is like if statement. It will run the first chunk most of the time.
     # Whenever it commits an error, it will jump to the `error' chunk without stopping the execution
     # Other possible options are warning and finally: including anything not warnings or errors
       {
-        res = geeglm(as.formula(paste0('Modi_pheno~dosage+as.factor(PLATFORM)+',
+        res = geeglm(as.formula(paste0('Modi_pheno~round(as.numeric(dosage))+as.factor(PLATFORM)+',
                                         ,c(paste0('PC',1:6,collapse = '+'))))
               , family='binomial', data = ordered_asso
               , corstr = 'exchangeable', id = clusters)
