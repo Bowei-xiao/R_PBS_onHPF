@@ -17,7 +17,8 @@ logResult = function(dosage,pheno,m, snpname){
     
     # logistic regression
     # covariates including platform and PC correcting for ethnicity
-    res = glm(as.formula(paste0('MI~dosage+as.factor(PLATFORM)+'
+    # Addtive model, so round dosage to nearest integer
+    res = glm(as.formula(paste0('as.integer(MI)~round(as.numeric(dosage))+as.factor(PLATFORM)+'
                                    ,c(paste0('PC',1:6,collapse = '+'))))
                           ,family='binomial', data = asso)
     
