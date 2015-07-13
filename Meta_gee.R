@@ -40,7 +40,6 @@ geeResult = function(dosage,pheno,m, snpname){
     )
    
   }}
-}
 # ============ El Fin =================================
 
 library('doMC')
