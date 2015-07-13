@@ -18,7 +18,7 @@ geeResult = function(dosage,pheno,m, snpname){
     ordered_asso = asso[order(asso$FID),]
     
     ordered_asso$Modi_pheno = (as.integer(ordered_asso$MI))
-    
+    ordered_asso$dosage = round(as.numeric(ordered_asso$dosage))
     # Run GEE
     # Cluster Formatting: set FID to factor, then to numeric
     # Ignore the SNPs that crashed GEE algorithm. Returning NAs
@@ -28,7 +28,7 @@ geeResult = function(dosage,pheno,m, snpname){
     # Whenever it commits an error, it will jump to the `error' chunk without stopping the execution
     # Other possible options are warning and finally: including anything not warnings or errors
       {
-        res = geeglm(as.formula(paste0('Modi_pheno~round(as.numeric(dosage))+as.factor(PLATFORM)+',
+        res = geeglm(as.formula(paste0('Modi_pheno~dosage+as.factor(PLATFORM)+',
                                         ,c(paste0('PC',1:6,collapse = '+'))))
               , family='binomial', data = ordered_asso
               , corstr = 'exchangeable', id = clusters)
