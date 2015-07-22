@@ -1,0 +1,38 @@
+#!/bin/bash -x
+
+#PBS -l mem=120g
+#PBS -l vmem=120g
+#PBS -l walltime=240:00:00
+#PBS -l nodes=1:ppn=30
+#PBS -l gres=localhd:10
+#PBS -o /home/bowei/job_output/
+#PBS -e /home/bowei/job_output/
+#PBS -d ***working directory****
+#PBS -N fixFormat
+
+export OUTDIR=$PBS_O_WORKDIR/job_output
+export PATH=$PATH:$PBS_O_WORKDIR
+hostname
+
+cd $PBS_O_WORKDIR
+echo "Working dir is ${PBS_O_WORKDIR}"
+
+date
+# Here goes the Bash Code
+i=${PBS_ARRAYID}
+TMPDIR=/localhd/${PBS_JOBID}
+cp chr*_metaOut.txt $TMPDIR/
+cd $TMPDIR
+ls .
+for j in chr${i}.block*_metaOut.txt
+do
+echo $j
+sed -i '/^RSID/d' $j
+pval=`cut -f 9 $j`
+IFS='_' read -a theFile <<< "$j"
+echo $theFile
+info=`zcat /***/GWAS2/chr${i}/${theFile}.dosage.gz | cut -f 1-3`
+paste <(echo "$info") <(echo "$pval") --delimiters '\t' > formatFixed_${j} 
+done
+cp formatFixed_* $PBS_O_WORKDIR
+echo "Chromosome ${i} is ready for Manhattan Plot"
