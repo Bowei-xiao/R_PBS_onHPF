@@ -18,7 +18,7 @@ geeResult = function(dosage,pheno,m, snpname){
     ordered_asso = asso[order(asso$FID),]
     
     ordered_asso$Modi_pheno = (as.integer(ordered_asso$MI))
-    ordered_asso$dosage = round(as.numeric(ordered_asso$dosage))
+    
     # Run GEE
     # Cluster Formatting: set FID to factor, then to numeric
     # Ignore the SNPs that crashed GEE algorithm. Returning NAs
