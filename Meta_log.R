@@ -14,10 +14,10 @@ logResult = function(dosage,pheno,m, snpname){
     # Removing the individuals with missing phenotype status
     asso$MI[which(asso$MI == '-9')] = NA 
     asso = na.omit(asso)
-    asso$dosage = round(as.numeric(dosage))
+    
     # logistic regression
     # covariates including platform and PC correcting for ethnicity
-    # Addtive model, so round dosage to nearest integer
+    # Addtive model, 
     res = glm(as.formula(paste0('as.integer(MI)~dosage+as.factor(PLATFORM)+'
                                    ,c(paste0('PC',1:6,collapse = '+'))))
                           ,family='binomial', data = asso)
